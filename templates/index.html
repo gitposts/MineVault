@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1>MineVault</h1>
+
+    <table>
+        <tr>
+            <th>ItemID</th>
+            <th>ItemName</th>
+            <th>Category</th>
+            <th>MaxStackSize</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ item[0] }}</td>
+            <td>{{ item[1] }}</td>
+            <td>{{ item[2] }}</td>
+            <td>{{ item[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <form action="/" method="POST">
+        <label for="content_item">Item Name:</label>
+        <input type="text" name="content_item" id="content_item">
+        <input type="submit" value="Add Item">
+    </form>
+    <form>
+        <label for="chest_num">Chest ID:</label>
+        <input type="text" name="chest_num" id="chest_num">
+        <label for="slot_num">Slot Number:</label>
+        <input type="text" name="slot_num" id="slot_num">
+        <a id="deleteLink" href="#">Delete Item</a>
+    </form>
+    <form action="/update" method="POST">
+        <label for="item_name_u">Item Name:</label>
+        <input type="text" name="item_name_u" id="item_name_u">
+        <label for="chest_num_u">Chest ID:</label>
+        <input type="text" name="chest_num_u" id="chest_num_u">
+        <label for="slot_num_u">Slot Number:</label>
+        <input type="text" name="slot_num_u" id="slot_num_u">
+        <input type="submit" value="Update Item">
+    </form>
+    <script>
+
+        function updateHref() {
+            let chestId = document.getElementById('chest_num').value;
+            let slotId = document.getElementById('slot_num').value;
+
+            const link = document.getElementById("deleteLink");
+            link.href = ''.concat('/delete/', chestId, '/', slotId);
+
+        }
+
+        document.addEventListener("change", updateHref);
+
+    </script>
+</div>
+
+{% endblock %}
