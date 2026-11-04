@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MineVault - Inventory Manager</title>
+
+
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<script src="{{ url_for('static', filename='script.js') }}" defer></script>
+
+
+
+</head>
+<body>
+
+
+    <h1>⛏️ MineVault</h1>
+    <p>Your Minecraft Inventory Management System</p>
+
+    <h2>Welcome to MineVault, {{ player[2] }}!</h2>
+    <p>Manage your items, chests, and crafting.</p>
+
+    <h3>Main Menu</h3>
+
+
+<button onclick="document.getElementById('inventory').scrollIntoView({behavior: 'smooth'})">
+    Player Inventory
+</button>
+
+<button onclick="document.getElementById('chest').scrollIntoView({behavior: 'smooth'})">
+    Chest Storage
+</button>
+
+<button onclick="document.getElementById('crafting').scrollIntoView({behavior: 'smooth'})">
+    Crafting
+</button>
+
+
+
+<section class="inventory-section" id="inventory">
+
+    <h2>Player Inventory</h2>
+    <p>Items currently stored in your inventory</p>
+
+  
+<div class="inventory-grid">
+    
+<div class="slot" title="Wood">
+    🪵<span class="quantity" id="wood-count">32</span>
+</div>
+
+    <div class="slot" title="Diamond">
+        💎<span class="quantity">8</span>
+    </div>
+    <div class="slot" title="Pickaxe">
+     <span class="quantity" id="pickaxe-count">1</span>
+    </div>
+    <div class="slot" title="Stone">
+       <span class="quantity" id="stone-count">64</span>
+    </div>
+    <div class="slot" title="Sword">
+        🗡️<span class="quantity">1</span>
+    </div>
+    <div class="slot" title="Apple">
+        🍎<span class="quantity">12</span>
+    </div>
+    <div class="slot" title="Wood">
+        🪵<span class="quantity">16</span>
+    </div>
+    <div class="slot" title="Diamond">
+        💎<span class="quantity">4</span>
+    </div>
+    <div class="slot" title="Stone">
+        🪨<span class="quantity">32</span>
+    </div>
+</div>
+
+</section>
+
+
+<section class="inventory-section" id="chest">
+
+    <h2>📦 Chest Storage</h2>
+    <p>Manage items stored inside your chest</p>
+
+    <h3>{{ chest_name }}</h3>
+    <form action="/chest-select/{{player[0]}}" method="POST">
+        <select name="display-chest" id="display-chest" >
+            {% for chest in chests %}
+            {% if chest_name == chest[0] %}
+                <option value="{{chest[1]}}" selected>{{chest[0]}}</option>
+            {% else %}
+                <option value="{{chest[1]}}">{{chest[0]}}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+        <input type="submit" id="chest_sel_submit" value="Swap Chest">
+    </form>
+    
+<p id="capacity-text">Storage Capacity: 18 / 27 slots</p>
+
+
+    <div class="capacity-bar">
+        
+    <div class="capacity-fill" id="capacity-fill"></div>
+
+    </div>
+
+
+    <div class="inventory-grid">
+        {% for slot in chest_slots %}
+        <div class="slot"><input type="radio" name="item_slot" value="{{slot[2]}}" id="item_{{slot[1]}}" onclick="updateForm(this.value, {{slot[3]}}, {{slot[1]}})">{{slot[2]}} {{slot[3]}}</input></div>
+        {% endfor %}
+    </div>
+
+
+    <div id="item-management">
+
+    <form id="transfer" action="/transfer/{{chest_name}}/" method="POST">
+
+        <label for="transfer-amount">Transfer:</label>
+        <input type="number" id="transfer-amount" name="amount_sel" min="1" max="64"><ins>to</ins>
+        <select name="transfer_chest" id="transfer_chest">
+            {% for chest in chests %}
+            <option value="{{chest[0]}}">{{chest[0]}}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" id="transfer-button" form="transfer">Transfer</button><br>
+        <input type="text" id="transfer-item-name" name="transfer-item-name" value="">
+
+    </form>
+
+    <p id="transfer-message"></p>
+
+
+    <form id="adjust-amount" action="/adjust-amount/{{chest_name}}/{{player[0]}}" method="POST">
+
+        <label for="new-amount">Change amount:</label>
+        <input type="number" id="new-amount" name="new-amount" min="1" max="64">
+        <button type="submit" id="amount-button" form="adjust-amount">Change</button>
+        <input type="text" id="amount-item-slot" name="amount-item-slot" value="">
+
+    </form>
+
+
+    <form id="item-delete" action="/delete-item/{{chest_name}}/{{player[0]}}" method="POST">
+
+        <label id="delete-button-label" for="delete-button"></label>
+        <button type="submit" id="delete-button" form="item-delete">Delete</button>
+        <input type="text" id="delete-item-slot" name="delete-item-slot" value="">
+
+    </form>
+
+    </div>
+
+
+    <form id="create-chest" action="/create-chest/{{player[0]}}" method="GET">
+        <button type="submit" id="new-chest" form="create-chest">Create New Chest!</button>
+    </form>
+
+    <button id="del-chest" onclick="showConfirmation()">Delete</button><br>
+    <p id="confirmation">Are you sure you want to delete {{chest_name}}?</p><br>
+    <button id="no-del" onclick="cancelConfirmation()">Cancel</button>
+    <form id="delete-chest" action="/delete-chest/{{chest_name}}/{{player[0]}}" method="POST">
+        <button type="submit" id="yes-del" form="delete-chest">Yes</button>
+    </form>
+
+    <script>
+        document.getElementById("item-management").style.display = "none";
+
+        function updateForm(value, text, slot_num) {
+            document.getElementById("item-management").style.display = "inline";
+            document.getElementById("transfer-amount").setAttribute("max", text);
+            document.getElementById("transfer").setAttribute("action", "/transfer/{{chest_name}}/" + slot_num + "/" + {{player[0]}});
+
+            document.getElementById("transfer-item-name").style.display = "none";
+            document.getElementById("transfer-item-name").setAttribute("value", value);
+
+            document.getElementById("amount-item-slot").style.display = "none";
+            document.getElementById("amount-item-slot").setAttribute("value", slot_num);
+
+            document.getElementById("delete-button-label").textContent = "Delete " + value + "?";
+            document.getElementById("delete-item-slot").style.display = "none";
+            document.getElementById("delete-item-slot").setAttribute("value", slot_num);
+        }
+
+        document.getElementById("confirmation").style.display = "none";
+        document.getElementById("yes-del").style.display = "none";
+        document.getElementById("no-del").style.display = "none";
+
+        function showConfirmation() {
+            document.getElementById("confirmation").style.display = "inline";
+            document.getElementById("delete-chest").style.display = "inline";
+            document.getElementById("yes-del").style.display = "inline";
+            document.getElementById("no-del").style.display = "inline";
+        }
+
+        function cancelConfirmation() {
+            document.getElementById("confirmation").style.display = "none";
+            document.getElementById("yes-del").style.display = "none";
+            document.getElementById("no-del").style.display = "none";
+        }
+    </script>
+
+</section>
+
+
+<section class="inventory-section" id="crafting">
+    <h2>⚒️ Crafting Station</h2>
+    <p>Combine materials to craft new items!</p>
+
+    <h3>Crafting Recipes</h3>
+    <p>🪵 Wood + 🪨 Stone = ⛏️ Pickaxe</p>
+
+  
+<button id="craft-button">Craft Item</button>
+<p id="craft-message"></p>
+
+</section>
+
+</body>
+</html>

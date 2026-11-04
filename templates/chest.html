@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1>Chest</h1>
+
+    <table>
+        <tr>
+            <th>Slot Number</th>
+            <th>Item Name</th>
+            <th>Quantity</th>
+        </tr>
+        {% for slot in slots %}
+        <tr>
+            <td>{{ slot[1] }}</td>
+            <td>{{ slot[2] }}</td>
+            <td>{{ slot[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+
+{% endblock %}
