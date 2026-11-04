@@ -46,9 +46,14 @@
         <input type="text" name="slot_num_u" id="slot_num_u">
         <input type="submit" value="Update Item">
     </form>
+    <form action="/display_chest" >
+        <label for="chest_sel">Select a chest:</label>
+        <input type="number" name="chest_sel" id="chest_sel">
+        <a id="chestLink" href="#">Go to chest</a>
+    </form>
     <script>
 
-        function updateHref() {
+        function updateHrefDel() {
             let chestId = document.getElementById('chest_num').value;
             let slotId = document.getElementById('slot_num').value;
 
@@ -57,7 +62,16 @@
 
         }
 
-        document.addEventListener("change", updateHref);
+        function updateHrefChest() {
+            let chestId = document.getElementById('chest_sel').value;
+
+            const link = document.getElementById('chestLink');
+            link.href = ''.concat('/display_chest/', chestId);
+        }
+
+        document.getElementById("chest_num").addEventListener("change", updateHrefDel);
+        document.getElementById("slot_num").addEventListener("change", updateHrefDel);
+        document.getElementById("chest_sel").addEventListener("change", updateHrefChest);
 
     </script>
 </div>

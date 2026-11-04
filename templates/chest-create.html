@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<h2>Create a New Chest!</h2>
+<p>Enter the name and size of the chest.</p>
+
+<form id="chest-info" action="/create-chest/{{player[0]}}" method="POST">
+    <label for="chest-name">Chest Name:</label>
+    <input type="text" id="chest-name" name="chest-name">
+    <select id="chest-size" name="chest-size">
+        <option id="single" value="27">Single (27 Slots)</option>
+        <option id="double" value="54">Double (54 Slots)</option>
+    </select>
+
+    <p>Add some items to your chest</p>
+    <input type="text" id="items-list" name="items-list" value="">
+    <input type="text" id="amounts-list" name="amounts-list" value="">
+    <input type="text" id="item-name" name="item-name">
+    <input type="number" id="item-amount" name="item-amount" min="1" max="64"><br>
+    <input type="button" id="add" name="add" value="Add Item" onclick="addItem()"><br>
+
+    <button type="submit" id="create">Create!</button>
+</form>
+
+<script>
+    document.getElementById("items-list").style.display="none";
+    document.getElementById("amounts-list").style.display="none";
+
+    function addItem() {
+        items = document.getElementById("items-list").value;
+        items += document.getElementById("item-name").value + ",";
+        document.getElementById("items-list").setAttribute("value", items);
+        item = document.getElementById("item-name").value;
+
+        amounts = document.getElementById("amounts-list").value;
+        amounts += document.getElementById("item-amount").value + ",";
+        document.getElementById("amounts-list").setAttribute("value", amounts);
+        amount = document.getElementById("item-amount").value;
+
+        window.alert("Added " + amount + " " + item + "(s) to chest");
+    }
+</script>
+
+{% endblock %}

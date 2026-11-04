@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<h2>Update Information</h2>
+<p>Edit your username, avatar name, or EXP level.</p>
+
+<form action="/update-player/{{player[0]}}" method="POST">
+    <label for="username">Username:</label><br>
+    <input type="text" id="username" name="username" value="{{player[1]}}"><br>
+    <label for="avatar_name">Avatar Name:</label><br>
+    <input type="text" id="avatar_name" name="avatar_name" value="{{player[2]}}"><br>
+    <label for="exp">EXP Level:</label><br>
+    <input type="number" id="exp" name="exp" value="{{player[3]}}"><br>
+    <input type="submit" id="submit_new_player" value="Update">
+</form>
+{% endblock %}
