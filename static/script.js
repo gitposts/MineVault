@@ -14,25 +14,25 @@ let wood = 32;
 let stone = 64;
 let pickaxes = 1;
 
-craftButton.addEventListener("click", function() {
-    if (wood >= 1 && stone >= 1) {
-        wood--;
-        stone--;
-        pickaxes++;
-        updateInventory();
-
-        craftMessage.textContent =
-            "⛏️ Pickaxe crafted! Wood: " + wood +
-            " | Stone: " + stone +
-            " | Pickaxes: " + pickaxes;
-
-        craftMessage.style.color = "#a8d878";
-    } else {
-        craftMessage.textContent =
-            "Not enough materials to craft a pickaxe!";
-        craftMessage.style.color = "#ff7777";
-    }
-});
+//craftButton.addEventListener("click", function() {
+//    if (wood >= 1 && stone >= 1) {
+//        wood--;
+//        stone--;
+//        pickaxes++;
+//        updateInventory();
+//
+//        craftMessage.textContent =
+//            "⛏️ Pickaxe crafted! Wood: " + wood +
+//            " | Stone: " + stone +
+//            " | Pickaxes: " + pickaxes;
+//
+//        craftMessage.style.color = "#a8d878";
+//    } else {
+//        craftMessage.textContent =
+//            "Not enough materials to craft a pickaxe!";
+//        craftMessage.style.color = "#ff7777";
+//    }
+//});
 
 function updateInventory() {
     document.getElementById("wood-count").textContent = wood;

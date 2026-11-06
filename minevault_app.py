@@ -1,3 +1,6 @@
+# Things to fix/ make better
+# Add item index page to see all items, should be pretty simple
+
 from flask import Flask, render_template, request, redirect
 from flask_mysqldb import MySQL
 from flask_sqlalchemy import SQLAlchemy
@@ -24,24 +27,21 @@ def player_select():
 
         chest_slots = fetch_slots(chest_id=1)
         cur.execute("SELECT ChestName FROM Chest WHERE ChestId = 1")
-        chest_name = cur.fetchone()[0]
+        if cur.rowcount == 0:
+            chest_name = "No chests selected/ available"
+        else:
+            chest_name = cur.fetchone()[0]
+
         mysql.connection.commit()
         cur.close()
 
-        if len(chest_slots) == 0:
-            cur = mysql.connection.cursor()
-            cur.execute("SELECT * FROM chest")
-            chest = cur.fetchall()
-            if len(chest) <= 0:
-                return render_template('chest-create.html', player=player[0])
-            else:
-                return redirect('/')  # Eventually add an add item feature to solve when the player has no items in the starting chest
-        else:
-            return render_template('frontend.html',
+        return render_template('frontend.html',
                                    player=player[0],
                                    chest_slots=chest_slots,
                                    chests=fetch_chests(),
-                                   chest_name=chest_name)
+                                   chest_name=chest_name,
+                                   item=(),
+                                   recipes=fetch_recipes())
     else:
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM player")
@@ -98,6 +98,89 @@ def update_player(player_id):
 
 
 
+@app.route('/search-item/<int:player_id>/<string:chest_name>', methods=['POST','GET'])
+def search_item(player_id, chest_name):
+    if request.method == 'POST':
+        item_name = request.form['search-item-name']
+        in_chest = request.form.get('search-in-chest')
+
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT ItemName FROM Item")
+        all_items = cur.fetchall()
+        all_items_str = ()
+        for item in all_items:
+            all_items_str += (item[0],)
+
+        if item_name in all_items_str:
+            item = fetch_item(item_name)
+
+            if in_chest != 'on':
+                chests_with_item = None
+            else:
+                # change to item_id
+                cur.execute("SELECT ItemId FROM Item WHERE ItemName = %s", (item_name,))
+                item_id = cur.fetchone()[0]
+
+                cur.execute("SELECT c.ChestName, s.SlotNumber FROM InventorySlot s, Chest c WHERE s.ItemId = %s AND s.ChestId = c.ChestId", (item_id,))
+                chests_with_item = cur.fetchall()
+
+        else:
+            item = "none"
+            chests_with_item = None
+
+        cur.execute("SELECT * FROM player WHERE PlayerId = %s", (player_id,))
+        player = cur.fetchall()
+
+        cur.execute("SELECT ChestID FROM Chest WHERE ChestName = %s", (chest_name,))
+        chest_id = cur.fetchone()[0]
+
+        mysql.connection.commit()
+        cur.close()
+        return render_template('frontend.html',
+                               chest_slots=fetch_slots(chest_id),
+                               player=player[0],
+                               chests=fetch_chests(),
+                               chest_name=chest_name,
+                               item=item,
+                               item_chest=chests_with_item,
+                               recipes=fetch_recipes())
+    else:
+        return redirect('/')
+
+
+
+@app.route('/add-item/<int:player_id>/<int:item_id>/<int:item_max>', methods=['POST', 'GET'])
+def add_item(player_id, item_id, item_max):
+    if request.method == 'POST':
+        amount = request.form['item-add-amount']
+        chest_id = request.form['item-add-chest']
+
+        insert_item(item_id, amount, chest_id)
+
+        cur = mysql.connection.cursor()
+
+        cur.execute("SELECT * FROM player WHERE PlayerId = %s", (player_id,))
+        player = cur.fetchall()
+
+        cur.execute("SELECT ChestName FROM Chest WHERE ChestID = %s", (chest_id,))
+        chest_name = cur.fetchone()[0]
+
+        mysql.connection.commit()
+        cur.close()
+        return render_template('frontend.html',
+                               chest_slots=fetch_slots(chest_id),
+                               player=player[0],
+                               chests=fetch_chests(),
+                               chest_name=chest_name,
+                               item=(),
+                               recipes=fetch_recipes())
+
+    else:
+        return redirect('/')
+
+
+
+
 # Select chest functionality
 @app.route('/chest-select/<int:player_id>', methods=['POST', 'GET'])
 def update_item(player_id):
@@ -122,7 +205,9 @@ def update_item(player_id):
                                    chest_slots = chest_slots,
                                    player=player[0],
                                    chests=fetch_chests(),
-                                   chest_name=chest_name)
+                                   chest_name=chest_name,
+                                   item=(),
+                                   recipes=fetch_recipes())
         except:
             return "Error fetching chest"
     else:
@@ -131,7 +216,6 @@ def update_item(player_id):
 
 
 # Transfer items functionality
-# This ALMOST works but need a more reliable way to transfer into empty slots or slots with the same item
 @app.route('/transfer/<string:origin_chest>/<int:origin_slot>/<int:player_id>', methods=['POST', 'GET'])
 def transfer_chest(origin_chest, origin_slot, player_id):
     if request.method == "POST":
@@ -140,8 +224,6 @@ def transfer_chest(origin_chest, origin_slot, player_id):
         quantity = request.form['amount_sel']
 
         cur = mysql.connection.cursor()
-        cur.execute("SELECT MAX(SlotNumber) FROM InventorySlot, Chest WHERE InventorySlot.ChestID = Chest.ChestID AND Chest.ChestName = %s", (dest_chest,))
-        dest_slot = cur.fetchone()[0] + 1
 
         cur.execute("SELECT ItemId FROM Item WHERE ItemName = %s", (item_name,))
         item_id = cur.fetchone()[0]
@@ -159,11 +241,9 @@ def transfer_chest(origin_chest, origin_slot, player_id):
 	            AND SlotNumber = %s
                 AND ItemID = %s
                 AND Quantity >= %s;
-            INSERT INTO inventoryslot
-	            (ChestID, SlotNumber, ItemID, Quantity)
-            SELECT %s, %s, %s, %s
-            WHERE ROW_COUNT() = 1;
-        ''', (quantity, origin_chest_id, origin_slot, item_id, quantity, dest_chest_id, dest_slot, item_id, quantity))
+        ''', (quantity, origin_chest_id, origin_slot, item_id, quantity))
+
+        insert_item(item_id, quantity, dest_chest_id)
 
         cur.execute("SELECT * FROM player WHERE PlayerId = %s", (player_id,))
         player = cur.fetchall()
@@ -175,7 +255,9 @@ def transfer_chest(origin_chest, origin_slot, player_id):
                                chest_slots=fetch_slots(origin_chest_id),
                                player=player[0],
                                chests=fetch_chests(),
-                               chest_name=origin_chest)
+                               chest_name=origin_chest,
+                               item=(),
+                               recipes=fetch_recipes())
     else:
         return redirect("/")
 
@@ -203,7 +285,9 @@ def adjust_amount(chest_name, player_id):
                                chest_slots=fetch_slots(chest_id),
                                player=player[0],
                                chests=fetch_chests(),
-                               chest_name=chest_name)
+                               chest_name=chest_name,
+                               item=(),
+                               recipes=fetch_recipes())
 
     else:
         return redirect("/")
@@ -233,7 +317,9 @@ def delete_item(chest_name, player_id):
                                chest_slots=fetch_slots(chest_id),
                                player=player[0],
                                chests=fetch_chests(),
-                               chest_name=chest_name)
+                               chest_name=chest_name,
+                               item=(),
+                               recipes=fetch_recipes())
 
     else:
         return redirect("/")
@@ -288,7 +374,9 @@ def create_chest(owner_id):
                                chest_slots=fetch_slots(chest_id),
                                player=player[0],
                                chests=fetch_chests(),
-                               chest_name=chest_name)
+                               chest_name=chest_name,
+                               item=(),
+                               recipes=fetch_recipes())
     else:
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM player WHERE PlayerID = %s", (owner_id,))
@@ -316,7 +404,10 @@ def delete_chest(chest_name, player_id):
         player = cur.fetchall()
 
         cur.execute("SELECT ChestName FROM Chest WHERE ChestID = 1")
-        chest_name = cur.fetchone()[0]
+        if cur.rowcount == 0:
+            chest_name = "No chests selected/ available"
+        else:
+            chest_name = cur.fetchone()[0]
 
         mysql.connection.commit()
         cur.close()
@@ -325,17 +416,193 @@ def delete_chest(chest_name, player_id):
                                chest_slots=fetch_slots(1),
                                player=player[0],
                                chests=fetch_chests(),
-                               chest_name=chest_name)
+                               chest_name=chest_name,
+                               item=(),
+                               recipes=fetch_recipes())
 
     else:
         return redirect("/")
 
 
 
+@app.route('/craft-select/<int:player_id>/<string:chest_name>', methods=['POST', 'GET'])
+def craft_select(player_id, chest_name):
+    if request.method == 'POST':
+        recipe_id = request.form['select-recipe']
+
+        cur = mysql.connection.cursor()
+        cur.execute('''SELECT Item.ItemName, RecipeIngredient.Position 
+                    FROM RecipeIngredient, Item
+                    WHERE RecipeIngredient.RecipeId = %s AND Item.ItemId = RecipeIngredient.ItemId''', (recipe_id,))
+        item_positions = cur.fetchall()
+
+        cur.execute("SELECT GridSize FROM CraftingRecipe WHERE RecipeId = %s", (recipe_id,))
+        grid_size = cur.fetchone()[0]
+
+        crafting_grid = ["" for x in range(pow(grid_size,2)) ]
+        for position in item_positions:
+            crafting_grid[position[1]-1] = position[0]
+
+        cur.execute("SELECT ChestID FROM Chest WHERE ChestName = %s", (chest_name,))
+        chest_id = cur.fetchone()[0]
+
+        cur.execute("SELECT * FROM player WHERE PlayerId = %s", (player_id,))
+        player = cur.fetchall()
+
+        mysql.connection.commit()
+        cur.close()
+
+        return render_template('frontend.html',
+                               chest_slots=fetch_slots(chest_id),
+                               player=player[0],
+                               chests=fetch_chests(),
+                               chest_name=chest_name,
+                               item=(),
+                               recipes=fetch_recipes(),
+                               selected_recipe=recipe_id,
+                               crafting_grid=crafting_grid,
+                               grid_size=grid_size)
+
+    else:
+        return redirect("/")
+
+
+
+@app.route('/craft-item/<int:player_id>/<string:chest_name>/<int:recipe_id>', methods=['POST', 'GET'])
+def craft_item(player_id, chest_name, recipe_id):
+    if request.method == 'POST':
+
+        cur=mysql.connection.cursor()
+
+        cur.execute('''SELECT i.ItemID, SUM(ri.RequiredQuantity) AS Required,
+                    COALESCE((
+                        SELECT SUM(s.Quantity)
+                        FROM InventorySlot s
+                        JOIN Chest c ON s.ChestID = c.ChestID
+                        WHERE s.ItemID = ri.ItemID
+                    ), 0) AS Available
+                    FROM RecipeIngredient ri
+                    JOIN Item i ON ri.ItemID = i.ItemID
+                    WHERE ri.RecipeID = %s
+                    GROUP BY ri.ItemID, i.ItemName;
+        ''', (recipe_id, ))
+        ingredient_list = cur.fetchall()
+
+        can_craft = True
+        for ingredient in ingredient_list:
+            if ingredient[2] < ingredient[1]:
+                can_craft = False
+            else:
+                pass
+
+        if can_craft:
+
+            igdt_locations = ()
+            for ingredient in ingredient_list:
+                cur.execute('''SELECT c.ChestId, s.SlotNumber FROM InventorySlot s, Chest c
+                            WHERE c.ChestId = s.ChestId AND s.ItemId = %s''', (ingredient[0], ))
+                igdt_locations += (cur.fetchall(), )
+
+            i = 0
+            for ingredient in ingredient_list:
+                req_quantity = ingredient_list[i][1]
+                quantity = 0
+
+                j = 0
+                while (req_quantity > quantity):
+                    cur.execute("SELECT Quantity FROM InventorySlot WHERE ChestId = %s AND SlotNumber = %s", (igdt_locations[i][j][0], igdt_locations[i][j][1]))
+
+                    if (cur.fetchone()[0] == 1 and quantity < req_quantity):
+                        cur.execute("DELETE FROM InventorySlot WHERE ChestId = %s AND SlotNumber = %s", (igdt_locations[i][j][0], igdt_locations[i][j][1]))
+                        j = j + 1
+                    else:
+                        cur.execute('''UPDATE InventorySlot SET Quantity = Quantity - 1
+                                    WHERE ChestId = %s AND SlotNumber = %s''', (igdt_locations[i][j][0], igdt_locations[i][j][1]))
+
+                    mysql.connection.commit()
+
+                    quantity = quantity + 1
+
+                i = i + 1
+
+
+
+            cur.execute("SELECT ResultItemID FROM CraftingRecipe WHERE RecipeId = %s", (recipe_id,))
+            result_id = cur.fetchone()[0]
+
+            cur.execute("SELECT ChestID FROM Chest WHERE ChestName = %s", (chest_name,))
+            chest_id = cur.fetchone()[0]
+
+            cur.execute("SELECT ResultQuantity FROM CraftingRecipe WHERE RecipeId = %s", (recipe_id,))
+            result_amount = cur.fetchone()[0]
+            insert_item(result_id, result_amount, chest_id)
+
+            cur.execute("SELECT * FROM player WHERE PlayerId = %s", (player_id,))
+            player = cur.fetchall()
+
+            mysql.connection.commit()
+            cur.close()
+
+            return render_template('frontend.html',
+                                   chest_slots=fetch_slots(chest_id),
+                                   player=player[0],
+                                   chests=fetch_chests(),
+                                   chest_name=chest_name,
+                                   item=(),
+                                   recipes=fetch_recipes(),
+                                   selected_recipe=recipe_id)
+
+        else:
+
+            cur.execute("SELECT ChestID FROM Chest WHERE ChestName = %s", (chest_name,))
+            chest_id = cur.fetchone()[0]
+
+            cur.execute("SELECT * FROM player WHERE PlayerId = %s", (player_id,))
+            player = cur.fetchall()
+
+            mysql.connection.commit()
+            cur.close()
+
+            return render_template('frontend.html',
+                                   chest_slots=fetch_slots(chest_id),
+                                   player=player[0],
+                                   chests=fetch_chests(),
+                                   chest_name=chest_name,
+                                   item=(),
+                                   recipes=fetch_recipes(),
+                                   selected_recipe=recipe_id,
+                                   craft_message="Item not crafted.")
+
+    else:
+        return redirect("/")
+
+
+
+@app.route('/item-index/<int:player_name>', methods=['GET', 'POST'])
+def item_index():
+    if request.method == 'GET':
+        pass
+    else:
+        pass
+
+
+
+def fetch_item(item_name):
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM Item WHERE ItemName = %s", (item_name,))
+    return cur.fetchone()
+
+
+
 def fetch_chests():
     cur = mysql.connection.cursor()
     cur.execute("SELECT ChestName, ChestId FROM Chest")
-    chests = cur.fetchall()
+
+    if cur.rowcount == 0:
+        chests = ()
+    else:
+        chests = cur.fetchall()
+
     cur.close()
     return chests
 
@@ -351,10 +618,95 @@ def fetch_slots(chest_id):
                                 ON inventoryslot.ItemID = Item.ItemID
                             WHERE Chest.ChestID = %s
                             ORDER BY inventoryslot.SlotNumber''', (chest_id,))
-
     chest_slots = cur.fetchall()
+
+    if chest_slots is None:
+        chest_slots = ()
+
     cur.close()
     return chest_slots
+
+
+
+def fetch_recipes():
+    cur = mysql.connection.cursor()
+    cur.execute('''SELECT Item.ItemName, CraftingRecipe.RecipeId 
+                    FROM CraftingRecipe, Item 
+                    WHERE CraftingRecipe.ResultItemId = Item.ItemId''')
+    recipes = cur.fetchall()
+    cur.close()
+    return recipes
+
+
+
+def insert_item(item_id, amount, chest_id):
+    cur = mysql.connection.cursor()
+
+    cur.execute("SELECT MaxStackSize FROM Item WHERE ItemId = %s", (item_id,))
+    item_max = cur.fetchone()[0]
+
+    cur.execute('''SELECT Quantity, SlotNumber 
+                        FROM InventorySlot 
+                        WHERE ChestId = %s AND ItemId = %s AND Quantity < %s
+                        ORDER BY SlotNumber ASC''', (chest_id, item_id, item_max))
+    existing_item = cur.fetchone()
+
+    if existing_item is None:
+        cur.execute("SELECT SlotNumber FROM InventorySlot WHERE ChestId = %s ORDER BY SlotNumber ASC", (chest_id,))
+
+        all_slots = cur.fetchall()
+        print(all_slots)
+
+        i = 1
+        for slot in all_slots:
+            print(slot)
+            print(i)
+            if slot[0] == i:
+                i = i + 1
+            else:
+                break
+
+        cur.execute("SELECT Capacity FROM Chest WHERE ChestId = %s", (chest_id, ))
+        capacity = cur.fetchone()[0]
+
+        if i <= capacity:
+            cur.execute('''INSERT INTO inventoryslot (ChestID, SlotNumber, ItemID, Quantity)
+                                                VALUES (%s, %s, %s, %s)''', (chest_id, i, item_id, amount))
+            mysql.connection.commit()
+
+    else:
+        old_amount = existing_item[0]
+        if (old_amount + int(amount)) > item_max:
+            amount = (old_amount + int(amount)) % item_max
+            cur.execute('''UPDATE InventorySlot 
+                                SET Quantity = %s 
+                                WHERE ChestId = %s AND SlotNumber = %s''', (item_max, chest_id, existing_item[1]))
+            mysql.connection.commit()
+
+            cur.execute("SELECT SlotNumber FROM InventorySlot WHERE ChestId = %s ORDER BY SlotNumber ASC", (chest_id,))
+
+            all_slots = cur.fetchall()
+
+            i = 1
+            for slot in all_slots:
+                print(slot)
+                print(i)
+                if slot[0] == i:
+                    i = i + 1
+                else:
+                    break
+
+            cur.execute('''INSERT INTO inventoryslot (ChestID, SlotNumber, ItemID, Quantity)
+                                VALUES (%s, %s, %s, %s)''', (chest_id, i, item_id, amount))
+            mysql.connection.commit()
+
+        else:
+            amount = (old_amount + int(amount))
+
+            cur.execute('''UPDATE InventorySlot 
+                                                SET Quantity = %s 
+                                                WHERE ChestId = %s AND ItemId = %s''', (amount, chest_id, item_id))
+            mysql.connection.commit()
 
 
 

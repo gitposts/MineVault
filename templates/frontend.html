@@ -26,8 +26,8 @@
     <h3>Main Menu</h3>
 
 
-<button onclick="document.getElementById('inventory').scrollIntoView({behavior: 'smooth'})">
-    Player Inventory
+<button onclick="document.getElementById('search-item').scrollIntoView({behavior: 'smooth'})">
+    Search Item
 </button>
 
 <button onclick="document.getElementById('chest').scrollIntoView({behavior: 'smooth'})">
@@ -38,47 +38,76 @@
     Crafting
 </button>
 
+<section class="inventory-section" id="search-item">
+
+    <h2>Item Search</h2>
+    <p>Search for items and add them to chests!</p>
+
+    <h3>Enter an Item's Name:</h3>
+    <form action="/search-item/{{player[0]}}/{{chest_name}}" id="item-form" method="POST">
+
+        <input type="text" id="search-item-name" name="search-item-name">
+        <button type="submit" id="search-item-button" name="search-item-button">Search</button>
+        <label for="search-in-chest">Search in chests?</label>
+        <input type="checkbox" id="search-in-chest" name="search-in-chest">
+
+        {% if item|length != 0 %}
+        <div id="search-result">
+            {% if item == 'none' %}
+            <p>Item not found!</p>
+            {% else %}
+            <table id="result-item">
+            <tr>
+                <td>Item ID</td>
+                <td>Name</td>
+                <td>Category</td>
+                <td>Stacks To</td>
+            </tr>
+            <tr>
+                <td>{{item[0]}}</td>
+                <td>{{item[1]}}</td>
+                <td>{{item[2]}}</td>
+                <td>{{item[3]}}</td>
+            </tr>
+            </table>
+                {% if item_chest == None %}
+                {% elif item_chest|length == 0 %}
+                <p>Item not in any chests.</p>
+                {% else %}
+                <p>Item in:</p>
+                    <ul>
+                    {% for chest in item_chest %}
+                        <li>{{chest[0]}}, slot {{chest[1]}}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
 
 
-<section class="inventory-section" id="inventory">
 
-    <h2>Player Inventory</h2>
-    <p>Items currently stored in your inventory</p>
+            {% endif %}
+        </div>
+        {% else %}
+        {% endif %}
 
-  
-<div class="inventory-grid">
-    
-<div class="slot" title="Wood">
-    🪵<span class="quantity" id="wood-count">32</span>
-</div>
+    </form>
 
-    <div class="slot" title="Diamond">
-        💎<span class="quantity">8</span>
-    </div>
-    <div class="slot" title="Pickaxe">
-     <span class="quantity" id="pickaxe-count">1</span>
-    </div>
-    <div class="slot" title="Stone">
-       <span class="quantity" id="stone-count">64</span>
-    </div>
-    <div class="slot" title="Sword">
-        🗡️<span class="quantity">1</span>
-    </div>
-    <div class="slot" title="Apple">
-        🍎<span class="quantity">12</span>
-    </div>
-    <div class="slot" title="Wood">
-        🪵<span class="quantity">16</span>
-    </div>
-    <div class="slot" title="Diamond">
-        💎<span class="quantity">4</span>
-    </div>
-    <div class="slot" title="Stone">
-        🪨<span class="quantity">32</span>
-    </div>
-</div>
+    {% if item|length != 0 %}
+    <form action="/add-item/{{player[0]}}/{{item[0]}}/{{item[3]}}" id="add-item" method="POST">
+        <ins>Add </ins>
+        <input type="number" id="item-add-amount" name="item-add-amount" min="1" max="{{item[3]}}">
+        <ins>{{item[1]}} to </ins>
+        <select name="item-add-chest" id="item-add-chest">
+            {% for chest in chests %}
+            <option value="{{chest[1]}}">{{chest[0]}}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" id="item-add-submit" value="Add">
+    </form>
+    {% else %}
+    {% endif %}
 
 </section>
+
 
 
 <section class="inventory-section" id="chest">
@@ -87,8 +116,22 @@
     <p>Manage items stored inside your chest</p>
 
     <h3>{{ chest_name }}</h3>
+
+
+    <div class="inventory-grid">
+        {% if chest_slots|length != 0 %}
+            {% for slot in chest_slots %}
+            <div class="slot"><input type="radio" name="item_slot" value="{{slot[2]}}" id="item_{{slot[1]}}" onclick="updateForm(this.value, {{slot[3]}}, {{slot[1]}})">{{slot[2]}} {{slot[3]}}</input></div>
+            {% endfor %}
+        {% else %}
+            <p>No items in chest</p>
+        {% endif %}
+    </div>
+
+    {% if chests|length != 0 %}
     <form action="/chest-select/{{player[0]}}" method="POST">
         <select name="display-chest" id="display-chest" >
+
             {% for chest in chests %}
             {% if chest_name == chest[0] %}
                 <option value="{{chest[1]}}" selected>{{chest[0]}}</option>
@@ -96,26 +139,11 @@
                 <option value="{{chest[1]}}">{{chest[0]}}</option>
             {% endif %}
             {% endfor %}
+
         </select>
         <input type="submit" id="chest_sel_submit" value="Swap Chest">
     </form>
-    
-<p id="capacity-text">Storage Capacity: 18 / 27 slots</p>
-
-
-    <div class="capacity-bar">
-        
-    <div class="capacity-fill" id="capacity-fill"></div>
-
-    </div>
-
-
-    <div class="inventory-grid">
-        {% for slot in chest_slots %}
-        <div class="slot"><input type="radio" name="item_slot" value="{{slot[2]}}" id="item_{{slot[1]}}" onclick="updateForm(this.value, {{slot[3]}}, {{slot[1]}})">{{slot[2]}} {{slot[3]}}</input></div>
-        {% endfor %}
-    </div>
-
+    {% endif %}
 
     <div id="item-management">
 
@@ -209,15 +237,50 @@
 
 
 <section class="inventory-section" id="crafting">
+
     <h2>⚒️ Crafting Station</h2>
     <p>Combine materials to craft new items!</p>
 
     <h3>Crafting Recipes</h3>
-    <p>🪵 Wood + 🪨 Stone = ⛏️ Pickaxe</p>
+    <form action="/craft-select/{{player[0]}}/{{chest_name}}" id="craft-form" method="POST">
+        <label for="select-recipe">Select a craftable item</label>
+        <select id="select-recipe" name="select-recipe">
+            {% for recipe in recipes %}
+            <option value="{{recipe[1]}}">{{recipe[0]}}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" id="select-recipe-button" name="select-recipe-button" value="Show Recipe">
+    </form>
+    {% if selected_recipe != None and crafting_grid|length != 0%}
 
-  
-<button id="craft-button">Craft Item</button>
-<p id="craft-message"></p>
+        {% if grid_size == 3 %}
+            <div class="crafting-grid-3">
+                <div class="slot">{{crafting_grid[0]}}</div>
+                <div class="slot">{{crafting_grid[1]}}</div>
+                <div class="slot">{{crafting_grid[2]}}</div>
+                <div class="slot">{{crafting_grid[3]}}</div>
+                <div class="slot">{{crafting_grid[4]}}</div>
+                <div class="slot">{{crafting_grid[5]}}</div>
+                <div class="slot">{{crafting_grid[6]}}</div>
+                <div class="slot">{{crafting_grid[7]}}</div>
+                <div class="slot">{{crafting_grid[8]}}</div>
+            </div>
+        {% else %}
+        {% endif %}
+
+        <form action="/craft-item/{{player[0]}}/{{chest_name}}/{{selected_recipe}}" id="craft-item" method="POST">
+
+            <button type="submit" id="craft-button">Craft Item</button>
+
+        </form>
+
+    {% else %}
+    {% endif %}
+
+    {% if craft_message != None %}
+        <p>{{craft_message}}</p>
+    {% endif %}
+
 
 </section>
 

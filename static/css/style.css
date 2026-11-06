@@ -58,6 +58,13 @@ button:hover {
     margin-top: 25px;
 }
 
+.crafting-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-top: 25px;
+}
+
 .slot {
     background-color: #777;
     border: 3px solid #aaa;
