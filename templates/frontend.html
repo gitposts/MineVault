@@ -38,6 +38,12 @@
     Crafting
 </button>
 
+<form action="/player-select" method="GET" >
+    <button type="submit">
+        Logout
+    </button>
+</form>
+
 <section class="inventory-section" id="search-item">
 
     <h2>Item Search</h2>
@@ -91,7 +97,7 @@
 
     </form>
 
-    {% if item|length != 0 %}
+    {% if item|length != 0 and item != 'none' %}
     <form action="/add-item/{{player[0]}}/{{item[0]}}/{{item[3]}}" id="add-item" method="POST">
         <ins>Add </ins>
         <input type="number" id="item-add-amount" name="item-add-amount" min="1" max="{{item[3]}}">
@@ -252,6 +258,12 @@
         <input type="submit" id="select-recipe-button" name="select-recipe-button" value="Show Recipe">
     </form>
     {% if selected_recipe != None and crafting_grid|length != 0%}
+
+        {% for recipe in recipes %}
+        {% if recipe[1]|string == selected_recipe[0]|string %}
+        <h3>{{ recipe[0] }}</h3>
+        {% endif %}
+        {% endfor %}
 
         {% if grid_size == 3 %}
             <div class="crafting-grid-3">

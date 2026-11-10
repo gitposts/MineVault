@@ -3,7 +3,6 @@
 
 from flask import Flask, render_template, request, redirect
 from flask_mysqldb import MySQL
-from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['MYSQL_HOST'] = 'localhost'
@@ -25,10 +24,10 @@ def player_select():
         cur.execute("SELECT * FROM player WHERE PlayerId = %s", (player_id, ))
         player = cur.fetchall()
 
-        chest_slots = fetch_slots(chest_id=1)
-        cur.execute("SELECT ChestName FROM Chest WHERE ChestId = 1")
+        chest_slots = fetch_slots(1, player_id)
+        cur.execute("SELECT ChestName FROM Chest WHERE PlayerId = %s LIMIT 1", (player_id, ))
         if cur.rowcount == 0:
-            chest_name = "No chests selected/ available"
+            chest_name = "No chests selected or available"
         else:
             chest_name = cur.fetchone()[0]
 
@@ -38,7 +37,7 @@ def player_select():
         return render_template('frontend.html',
                                    player=player[0],
                                    chest_slots=chest_slots,
-                                   chests=fetch_chests(),
+                                   chests=fetch_chests(player_id),
                                    chest_name=chest_name,
                                    item=(),
                                    recipes=fetch_recipes())
@@ -121,7 +120,7 @@ def search_item(player_id, chest_name):
                 cur.execute("SELECT ItemId FROM Item WHERE ItemName = %s", (item_name,))
                 item_id = cur.fetchone()[0]
 
-                cur.execute("SELECT c.ChestName, s.SlotNumber FROM InventorySlot s, Chest c WHERE s.ItemId = %s AND s.ChestId = c.ChestId", (item_id,))
+                cur.execute("SELECT c.ChestName, s.SlotNumber FROM InventorySlot s, Chest c WHERE s.ItemId = %s AND s.ChestId = c.ChestId AND c.PlayerId = %s", (item_id, player_id))
                 chests_with_item = cur.fetchall()
 
         else:
@@ -131,15 +130,18 @@ def search_item(player_id, chest_name):
         cur.execute("SELECT * FROM player WHERE PlayerId = %s", (player_id,))
         player = cur.fetchall()
 
-        cur.execute("SELECT ChestID FROM Chest WHERE ChestName = %s", (chest_name,))
-        chest_id = cur.fetchone()[0]
+        if chest_name != "No chests selected or available":
+            cur.execute("SELECT ChestID FROM Chest WHERE ChestName = %s", (chest_name,))
+            chest_id = cur.fetchone()[0]
+        else:
+            chest_id = 1
 
         mysql.connection.commit()
         cur.close()
         return render_template('frontend.html',
-                               chest_slots=fetch_slots(chest_id),
+                               chest_slots=fetch_slots(chest_id, player_id),
                                player=player[0],
-                               chests=fetch_chests(),
+                               chests=fetch_chests(player_id),
                                chest_name=chest_name,
                                item=item,
                                item_chest=chests_with_item,
@@ -168,9 +170,9 @@ def add_item(player_id, item_id, item_max):
         mysql.connection.commit()
         cur.close()
         return render_template('frontend.html',
-                               chest_slots=fetch_slots(chest_id),
+                               chest_slots=fetch_slots(chest_id, player_id),
                                player=player[0],
-                               chests=fetch_chests(),
+                               chests=fetch_chests(player_id),
                                chest_name=chest_name,
                                item=(),
                                recipes=fetch_recipes())
@@ -191,7 +193,7 @@ def update_item(player_id):
 
             chest_id = request.form['display-chest']
 
-            chest_slots = fetch_slots(chest_id)
+            chest_slots = fetch_slots(chest_id, player_id)
 
             cur.execute("SELECT * FROM player WHERE PlayerId = %s", (player_id,))
             player = cur.fetchall()
@@ -204,7 +206,7 @@ def update_item(player_id):
             return render_template('frontend.html',
                                    chest_slots = chest_slots,
                                    player=player[0],
-                                   chests=fetch_chests(),
+                                   chests=fetch_chests(player_id),
                                    chest_name=chest_name,
                                    item=(),
                                    recipes=fetch_recipes())
@@ -252,9 +254,9 @@ def transfer_chest(origin_chest, origin_slot, player_id):
         cur.close()
 
         return render_template('frontend.html',
-                               chest_slots=fetch_slots(origin_chest_id),
+                               chest_slots=fetch_slots(origin_chest_id, player_id),
                                player=player[0],
-                               chests=fetch_chests(),
+                               chests=fetch_chests(player_id),
                                chest_name=origin_chest,
                                item=(),
                                recipes=fetch_recipes())
@@ -282,9 +284,9 @@ def adjust_amount(chest_name, player_id):
         cur.close()
 
         return render_template('frontend.html',
-                               chest_slots=fetch_slots(chest_id),
+                               chest_slots=fetch_slots(chest_id, player_id),
                                player=player[0],
-                               chests=fetch_chests(),
+                               chests=fetch_chests(player_id),
                                chest_name=chest_name,
                                item=(),
                                recipes=fetch_recipes())
@@ -314,9 +316,9 @@ def delete_item(chest_name, player_id):
         cur.close()
 
         return render_template('frontend.html',
-                               chest_slots=fetch_slots(chest_id),
+                               chest_slots=fetch_slots(chest_id, player_id),
                                player=player[0],
-                               chests=fetch_chests(),
+                               chests=fetch_chests(player_id),
                                chest_name=chest_name,
                                item=(),
                                recipes=fetch_recipes())
@@ -371,9 +373,9 @@ def create_chest(owner_id):
         cur.close()
 
         return render_template('frontend.html',
-                               chest_slots=fetch_slots(chest_id),
+                               chest_slots=fetch_slots(chest_id, owner_id),
                                player=player[0],
-                               chests=fetch_chests(),
+                               chests=fetch_chests(owner_id),
                                chest_name=chest_name,
                                item=(),
                                recipes=fetch_recipes())
@@ -413,9 +415,9 @@ def delete_chest(chest_name, player_id):
         cur.close()
 
         return render_template('frontend.html',
-                               chest_slots=fetch_slots(1),
+                               chest_slots=fetch_slots(1, player_id),
                                player=player[0],
-                               chests=fetch_chests(),
+                               chests=fetch_chests(player_id),
                                chest_name=chest_name,
                                item=(),
                                recipes=fetch_recipes())
@@ -443,8 +445,11 @@ def craft_select(player_id, chest_name):
         for position in item_positions:
             crafting_grid[position[1]-1] = position[0]
 
-        cur.execute("SELECT ChestID FROM Chest WHERE ChestName = %s", (chest_name,))
-        chest_id = cur.fetchone()[0]
+        if chest_name != "No chests selected or available":
+            cur.execute("SELECT ChestID FROM Chest WHERE ChestName = %s", (chest_name,))
+            chest_id = cur.fetchone()[0]
+        else:
+            chest_id = 1
 
         cur.execute("SELECT * FROM player WHERE PlayerId = %s", (player_id,))
         player = cur.fetchall()
@@ -453,9 +458,9 @@ def craft_select(player_id, chest_name):
         cur.close()
 
         return render_template('frontend.html',
-                               chest_slots=fetch_slots(chest_id),
+                               chest_slots=fetch_slots(chest_id, player_id),
                                player=player[0],
-                               chests=fetch_chests(),
+                               chests=fetch_chests(player_id),
                                chest_name=chest_name,
                                item=(),
                                recipes=fetch_recipes(),
@@ -479,13 +484,13 @@ def craft_item(player_id, chest_name, recipe_id):
                         SELECT SUM(s.Quantity)
                         FROM InventorySlot s
                         JOIN Chest c ON s.ChestID = c.ChestID
-                        WHERE s.ItemID = ri.ItemID
+                        WHERE c.PlayerId = %s AND s.ItemID = ri.ItemID
                     ), 0) AS Available
                     FROM RecipeIngredient ri
                     JOIN Item i ON ri.ItemID = i.ItemID
                     WHERE ri.RecipeID = %s
                     GROUP BY ri.ItemID, i.ItemName;
-        ''', (recipe_id, ))
+        ''', (player_id, recipe_id))
         ingredient_list = cur.fetchall()
 
         can_craft = True
@@ -500,7 +505,7 @@ def craft_item(player_id, chest_name, recipe_id):
             igdt_locations = ()
             for ingredient in ingredient_list:
                 cur.execute('''SELECT c.ChestId, s.SlotNumber FROM InventorySlot s, Chest c
-                            WHERE c.ChestId = s.ChestId AND s.ItemId = %s''', (ingredient[0], ))
+                            WHERE c.ChestId = s.ChestId AND s.ItemId = %s AND c.PlayerId = %s''', (ingredient[0], player_id))
                 igdt_locations += (cur.fetchall(), )
 
             i = 0
@@ -544,9 +549,9 @@ def craft_item(player_id, chest_name, recipe_id):
             cur.close()
 
             return render_template('frontend.html',
-                                   chest_slots=fetch_slots(chest_id),
+                                   chest_slots=fetch_slots(chest_id, player_id),
                                    player=player[0],
-                                   chests=fetch_chests(),
+                                   chests=fetch_chests(player_id),
                                    chest_name=chest_name,
                                    item=(),
                                    recipes=fetch_recipes(),
@@ -554,8 +559,11 @@ def craft_item(player_id, chest_name, recipe_id):
 
         else:
 
-            cur.execute("SELECT ChestID FROM Chest WHERE ChestName = %s", (chest_name,))
-            chest_id = cur.fetchone()[0]
+            if chest_name != "No chests selected or available":
+                cur.execute("SELECT ChestID FROM Chest WHERE ChestName = %s", (chest_name,))
+                chest_id = cur.fetchone()[0]
+            else:
+                chest_id = 1
 
             cur.execute("SELECT * FROM player WHERE PlayerId = %s", (player_id,))
             player = cur.fetchall()
@@ -564,9 +572,9 @@ def craft_item(player_id, chest_name, recipe_id):
             cur.close()
 
             return render_template('frontend.html',
-                                   chest_slots=fetch_slots(chest_id),
+                                   chest_slots=fetch_slots(chest_id, player_id),
                                    player=player[0],
-                                   chests=fetch_chests(),
+                                   chests=fetch_chests(player_id),
                                    chest_name=chest_name,
                                    item=(),
                                    recipes=fetch_recipes(),
@@ -594,9 +602,9 @@ def fetch_item(item_name):
 
 
 
-def fetch_chests():
+def fetch_chests(player_id):
     cur = mysql.connection.cursor()
-    cur.execute("SELECT ChestName, ChestId FROM Chest")
+    cur.execute("SELECT ChestName, ChestId FROM Chest WHERE PlayerId = %s", (player_id,))
 
     if cur.rowcount == 0:
         chests = ()
@@ -608,7 +616,7 @@ def fetch_chests():
 
 
 
-def fetch_slots(chest_id):
+def fetch_slots(chest_id, player_id):
     cur = mysql.connection.cursor()
     cur.execute('''SELECT Chest.ChestName, inventoryslot.SlotNumber, Item.ItemName, inventoryslot.Quantity
                             FROM inventoryslot
@@ -616,8 +624,8 @@ def fetch_slots(chest_id):
                                 ON inventoryslot.ChestID = Chest.ChestID
                             JOIN Item
                                 ON inventoryslot.ItemID = Item.ItemID
-                            WHERE Chest.ChestID = %s
-                            ORDER BY inventoryslot.SlotNumber''', (chest_id,))
+                            WHERE Chest.ChestID = %s AND Chest.PlayerId = %s
+                            ORDER BY inventoryslot.SlotNumber''', (chest_id, player_id))
     chest_slots = cur.fetchall()
 
     if chest_slots is None:
