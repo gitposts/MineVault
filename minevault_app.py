@@ -236,21 +236,28 @@ def transfer_chest(origin_chest, origin_slot, player_id):
         cur.execute("SELECT ChestId FROM Chest WHERE ChestName = %s", (origin_chest,))
         origin_chest_id = cur.fetchone()[0]
 
-        cur.execute('''
-            UPDATE inventoryslot
-            SET Quantity = Quantity - %s
-            WHERE ChestID = %s
-	            AND SlotNumber = %s
-                AND ItemID = %s
-                AND Quantity >= %s;
-        ''', (quantity, origin_chest_id, origin_slot, item_id, quantity))
+        cur.execute("SELECT Quantity FROM InventorySlot WHERE ChestId = %s AND SlotNumber = %s", (origin_chest_id, origin_slot))
+        if (cur.fetchone()[0] == int(quantity)):
+            cur.execute("DELETE FROM InventorySlot WHERE ChestId = %s AND SlotNumber = %s",
+                        (origin_chest_id, origin_slot))
+        else:
+            cur.execute('''
+                UPDATE inventoryslot
+                SET Quantity = Quantity - %s
+                WHERE ChestID = %s
+                    AND SlotNumber = %s
+                    AND ItemID = %s
+                    AND Quantity > %s;
+            ''', (quantity, origin_chest_id, origin_slot, item_id, quantity))
+
+        mysql.connection.commit()
 
         insert_item(item_id, quantity, dest_chest_id)
 
         cur.execute("SELECT * FROM player WHERE PlayerId = %s", (player_id,))
         player = cur.fetchall()
 
-        cur.connection.commit()
+        mysql.connection.commit()
         cur.close()
 
         return render_template('frontend.html',
