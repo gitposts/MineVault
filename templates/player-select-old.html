@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<h2>Welcome to MineVault!</h2>
+<p>Manage your items, chests, and crafting.</p>
+
+<h3>Select a player!</h3>
+<form action="/player-select" method="POST" id="player_form">
+    {% for player in players %}
+    <input type="radio" name="players" id="{{player[0]}}" value="{{player[0]}}">{{ player[1] }}</input><br>
+    {% endfor %}
+    <input type="submit" id="submit_player" value="Submit">
+</form>
+<a href="{{ url_for('create_player') }}">New player</a><br>
+<form action="/update-player/0" method="GET" id="update_form">
+    <input type="submit" id="update_player" value="Update information">
+</form>
+
+<script>
+    document.getElementById("update_form").style.display = "none";
+    document.getElementById("player_form").addEventListener("change", function() {
+        let player_id = document.querySelector('input[name="players"]:checked').value;
+        const button = document.getElementById("update_form");
+        let new_action = "/update-player/" + player_id.toString();
+        console.log(new_action);
+
+        button.setAttribute("action", new_action);
+        document.getElementById("update_form").style.display = "inline";
+    });
+</script>
+
+{% endblock %}

@@ -107,3 +107,909 @@ button:hover {
     height: 100%;
     background-color: #79b34c;
 }
+
+/* ===== MINEVAULT DESIGN IMPROVEMENTS ===== */
+
+/* Smoother overall appearance */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #172417, #304630);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+/* Improve the main title */
+h1 {
+    background: linear-gradient(90deg, #244b28, #4e8242);
+    color: #f5ffe9;
+    text-shadow: 2px 3px 4px #101c10;
+    border-bottom: 4px solid #a8d878;
+    letter-spacing: 2px;
+}
+
+/* Better section headings */
+h2 {
+    text-shadow: 1px 2px 3px #101c10;
+    letter-spacing: 1px;
+}
+
+/* Modern Minecraft-style buttons */
+button {
+    border-radius: 8px;
+    box-shadow: 0 4px 0 #304b26;
+    transition: background-color 0.2s ease,
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+}
+
+button:hover {
+    background-color: #83b95c;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #304b26;
+}
+
+button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #304b26;
+}
+
+/* Make inventory sections stand out */
+.inventory-section {
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    transition: box-shadow 0.3s ease;
+}
+
+.inventory-section:hover {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Improve inventory slots */
+.slot {
+    border-radius: 5px;
+    transition: background-color 0.2s ease,
+                transform 0.2s ease;
+}
+
+.slot:hover {
+    background-color: #a2a2a2;
+    transform: scale(1.05);
+}
+
+/* Make input boxes match the theme */
+input, select {
+    background-color: #263526;
+    color: white;
+    border: 2px solid #6b8e23;
+    border-radius: 6px;
+    padding: 10px;
+    max-width: 100%;
+}
+
+input:focus, select:focus {
+    outline: 2px solid #a8d878;
+}
+
+/* Improve the capacity bar */
+.capacity-bar {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.capacity-fill {
+    border-radius: 8px;
+    transition: width 0.3s ease;
+}
+
+/* Better layout on smaller screens */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 30px;
+        padding: 20px;
+    }
+
+    .inventory-section {
+        width: 95%;
+        padding: 12px;
+    }
+
+    .inventory-grid {
+        gap: 3px;
+    }
+
+    .slot {
+        font-size: 16px;
+        min-width: 0;
+    }
+
+    button {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+}
+
+/* ===== PLAYER SELECTION PAGE ===== */
+
+/* Organize the player selection form */
+#player_form {
+    background: rgba(15, 30, 15, 0.65);
+    border: 2px solid #6b8e23;
+    border-radius: 15px;
+    padding: 30px;
+    width: 85%;
+    max-width: 420px;
+    margin: 25px auto;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Improve player selection buttons */
+#player_form input[type="radio"] {
+    accent-color: #a8d878;
+    transform: scale(1.3);
+    margin: 12px 10px;
+    cursor: pointer;
+}
+
+/* Make the Submit button stand out */
+#submit_player {
+    background-color: #598b42;
+    color: white;
+    border: 2px solid #a8d878;
+    border-radius: 8px;
+    padding: 12px 35px;
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#submit_player:hover {
+    background-color: #83b95c;
+    transform: translateY(-2px);
+}
+
+/* Improve the New Player link */
+a[href*="create-player"],
+a[href*="create_player"] {
+    display: inline-block;
+    color: #d4f5a3;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 10px 20px;
+    border: 2px solid #6b8e23;
+    border-radius: 8px;
+    margin: 10px;
+    transition: all 0.2s ease;
+}
+
+a[href*="create-player"]:hover,
+a[href*="create_player"]:hover {
+    background-color: #598b42;
+    color: white;
+}
+
+/* Style the update player button */
+#update_player {
+    background-color: #425c36;
+    color: white;
+    border: 2px solid #8ab46b;
+    border-radius: 8px;
+    padding: 12px 20px;
+    cursor: pointer;
+}
+/* Compact player selection */
+#player_form {
+    padding: 18px 25px;
+    margin: 15px auto;
+}
+
+#player_form input[type="radio"] {
+    margin: 7px 8px;
+}
+
+#submit_player {
+    margin-top: 10px;
+}
+
+/* ===== MINEVAULT DESIGN UPGRADE ===== */
+
+/* Richer Minecraft-inspired background */
+body {
+    background:
+        radial-gradient(circle at 50% 10%,
+            #3d6538 0%, transparent 55%),
+        linear-gradient(135deg,
+            #101c13, #243b27, #101c13);
+    color: #f4f7ed;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+/* Main title */
+h1 {
+    background: linear-gradient(
+        135deg, #244a2a, #528449, #244a2a
+    );
+    color: #f5ffe8;
+    padding: 32px 15px;
+    font-size: clamp(30px, 5vw, 48px);
+    letter-spacing: 3px;
+    text-shadow: 3px 4px 0 #142415;
+    border-bottom: 5px solid #a5d678;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.3);
+}
+
+/* Section headings */
+h2 {
+    color: #b7ed85;
+    text-shadow: 0 2px 8px rgba(125,200,80,0.25);
+}
+
+h3 {
+    color: #ffd56e;
+    letter-spacing: 1px;
+}
+
+/* Minecraft-inspired buttons */
+button,
+input[type="submit"] {
+    background: linear-gradient(
+        180deg, #6da653, #3c702f
+    );
+    color: white;
+    border: 2px solid #b7e98a;
+    border-radius: 8px;
+    padding: 13px 25px;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 5px 0 #264823;
+    cursor: pointer;
+    transition: transform 0.2s,
+                box-shadow 0.2s,
+                filter 0.2s;
+}
+
+button:hover,
+input[type="submit"]:hover {
+    filter: brightness(1.2);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 0 #264823;
+}
+
+button:active,
+input[type="submit"]:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 #264823;
+}
+
+/* Inventory and chest panels */
+.inventory-section {
+    background: linear-gradient(
+        145deg, #354236, #222e25
+    );
+    border: 3px solid #83b64e;
+    border-radius: 14px;
+    padding: 25px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+}
+
+/* Minecraft inventory slots */
+.slot {
+    background: linear-gradient(
+        145deg, #707a70, #414a41
+    );
+    border: 3px solid #9eaf95;
+    border-radius: 5px;
+    box-shadow: inset 2px 2px 4px #242b24;
+    transition: transform 0.2s,
+                background 0.2s;
+}
+
+.slot:hover {
+    background: #819a6e;
+    transform: scale(1.08);
+    border-color: #d4f5a3;
+    z-index: 2;
+}
+
+/* Better text fields */
+input[type="text"],
+input[type="number"],
+select {
+    background: #18291b;
+    color: white;
+    border: 2px solid #7aa65d;
+    border-radius: 7px;
+    padding: 10px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Better links */
+a {
+    color: #c9f59a;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+/* Glowing capacity bar */
+.capacity-bar {
+    background: #18231a;
+    border: 2px solid #91b773;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.capacity-fill {
+    background: linear-gradient(
+        90deg, #4e9d42, #a4e76d
+    );
+    box-shadow: 0 0 12px #8bd65c;
+}
+
+/* Mobile-friendly inventory */
+@media (max-width: 600px) {
+    .inventory-section {
+        width: 92%;
+        padding: 12px;
+        box-sizing: border-box;
+    }
+
+    .inventory-grid {
+        gap: 2px;
+    }
+
+    .slot {
+        font-size: 15px;
+        border-width: 2px;
+    }
+}
+
+/* ===== ITEM SEARCH DESIGN UPGRADE ===== */
+
+/* Give each section a more polished game panel */
+.inventory-section {
+    position: relative;
+    background: linear-gradient(
+        145deg, #364338, #1b2c20
+    );
+    border: 3px solid #8dbd55;
+    border-radius: 14px;
+    padding: 30px 25px;
+    margin: 35px auto;
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.35),
+        inset 0 0 18px rgba(120, 180, 80, 0.08);
+}
+
+/* Decorative corner details */
+.inventory-section::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 22px;
+    height: 22px;
+    border-top: 4px solid #c4eb8c;
+    border-left: 4px solid #c4eb8c;
+}
+
+.inventory-section::after {
+    content: "";
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 22px;
+    height: 22px;
+    border-bottom: 4px solid #c4eb8c;
+    border-right: 4px solid #c4eb8c;
+}
+
+/* Better section titles */
+.inventory-section h2 {
+    font-size: 28px;
+    color: #c0f18c;
+    margin-top: 10px;
+    margin-bottom: 18px;
+    text-shadow: 0 3px 5px #101c13;
+}
+
+/* Improve search field appearance */
+.inventory-section input[type="text"] {
+    min-height: 45px;
+    background: #101e14;
+    border: 2px solid #8fbc68;
+    border-radius: 8px;
+    color: white;
+    padding: 10px 14px;
+    font-size: 16px;
+    transition: border-color 0.2s,
+                box-shadow 0.2s;
+}
+
+.inventory-section input[type="text"]:focus {
+    outline: none;
+    border-color: #d4ff9e;
+    box-shadow: 0 0 12px rgba(150, 220, 90, 0.35);
+}
+
+/* More polished search button */
+.inventory-section input[type="submit"] {
+    background: linear-gradient(
+        180deg, #83bd5d, #3c722e
+    );
+    border: 2px solid #c2ee92;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: bold;
+}
+
+/* Checkbox accent */
+.inventory-section input[type="checkbox"] {
+    accent-color: #a7e56b;
+    width: 17px;
+    height: 17px;
+    cursor: pointer;
+}
+
+/* ===== CHEST STORAGE IMPROVEMENTS ===== */
+
+/* Keep the storage section within the page */
+.inventory-section {
+    box-sizing: border-box;
+    width: 90%;
+    max-width: 850px;
+}
+
+/* Responsive Minecraft inventory grid */
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    margin: 25px auto;
+    box-sizing: border-box;
+}
+
+/* Smaller Minecraft-style item slots */
+.inventory-grid .slot {
+    min-width: 0;
+    width: 100%;
+    aspect-ratio: 1;
+    box-sizing: border-box;
+    padding: 4px;
+    overflow: hidden;
+
+    background: linear-gradient(
+        145deg, #777e76, #414941
+    );
+
+    border: 2px solid #a5b79d;
+    border-radius: 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 12px;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+/* Highlight item slots when hovered */
+.inventory-grid .slot:hover {
+    background: #78956b;
+    border-color: #d6f7a7;
+    transform: scale(1.04);
+}
+
+/* Keep quantities in the bottom-right corner */
+.inventory-grid .quantity {
+    position: absolute;
+    bottom: 3px;
+    right: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 3px black;
+}
+
+/* Prevent storage controls from overflowing */
+.inventory-section select,
+.inventory-section button,
+.inventory-section input {
+    max-width: 100%;
+}
+
+/* Adjust slots on smaller screens */
+@media (max-width: 600px) {
+    .inventory-grid {
+        gap: 3px;
+    }
+
+    .inventory-grid .slot {
+        font-size: 9px;
+        padding: 2px;
+    }
+
+    .inventory-grid .quantity {
+        font-size: 9px;
+    }
+}
+
+/* ===== LARGER MINECRAFT CHEST SLOTS ===== */
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+    max-width: 650px;
+    margin: 30px auto;
+}
+
+.inventory-grid .slot {
+    width: 100%;
+    min-width: 0;
+    min-height: 110px;
+    aspect-ratio: auto;
+    padding: 12px 8px;
+    box-sizing: border-box;
+
+    background: linear-gradient(
+        145deg,
+        #737b70,
+        #454c43
+    );
+
+    border: 4px solid #a9b6a0;
+    border-radius: 5px;
+
+    font-size: 17px;
+    line-height: 1.5;
+    overflow-wrap: normal;
+    word-break: normal;
+    overflow: hidden;
+}
+
+.inventory-grid .slot:hover {
+    border-color: #c9f59a;
+    background: #667d5b;
+    transform: translateY(-3px);
+}
+
+.inventory-grid .quantity {
+    font-size: 16px;
+    bottom: 7px;
+    right: 9px;
+}
+
+@media (max-width: 600px) {
+    .inventory-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .inventory-grid .slot {
+        min-height: 100px;
+        font-size: 14px;
+    }
+}
+
+/* Minecraft-inspired landscape background */
+
+body {
+    min-height: 100vh;
+    background: #15291d;
+}
+
+.minecraft-landscape {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        to bottom,
+        #659fbd 0%,
+        #a1d5d8 55%,
+        #7fae71 100%
+    );
+}
+
+.minevault-content {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    padding: 1px 0;
+  background: transparent;
+}
+
+.pixel-sun {
+    position: absolute;
+    top: 9%;
+    right: 13%;
+    width: 85px;
+    height: 85px;
+    background: #ffe28b;
+    box-shadow: 0 0 55px #ffe28b88;
+}
+
+.pixel-cloud {
+    position: absolute;
+    width: 150px;
+    height: 35px;
+    background: #eaf6ed;
+    box-shadow:
+        30px -25px #eaf6ed,
+        65px -25px #eaf6ed,
+        100px 0 #eaf6ed;
+    opacity: 0.8;
+}
+
+.cloud-one {
+    top: 16%;
+    left: 12%;
+}
+
+.cloud-two {
+    top: 30%;
+    right: 25%;
+    transform: scale(0.7);
+}
+
+.pixel-hill {
+    position: absolute;
+    bottom: 0;
+    background: #477b43;
+    clip-path: polygon(
+        0 100%, 0 55%, 20% 55%,
+        20% 35%, 45% 35%, 45% 15%,
+        70% 15%, 70% 45%,
+        100% 45%, 100% 100%
+    );
+}
+
+.hill-one {
+    left: -5%;
+    width: 65%;
+    height: 48%;
+}
+
+.hill-two {
+    right: -10%;
+    width: 65%;
+    height: 35%;
+    background: #315c35;
+    transform: scaleX(-1);
+}
+
+.pixel-grass {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 12%;
+    background: repeating-linear-gradient(
+        90deg,
+        #528c37 0 35px,
+        #619c42 35px 70px,
+        #447b30 70px 105px
+    );
+    border-top: 18px solid #80b94e;
+}
+
+@media (max-width: 600px) {
+    .pixel-sun {
+        width: 55px;
+        height: 55px;
+    }
+
+    .pixel-cloud {
+        transform: scale(0.55);
+    }
+}
+
+
+/* Minecraft-inspired landscape background */
+
+body {
+    background-color: #172d1d !important;
+    background-image:
+        linear-gradient(
+            180deg,
+            rgba(30, 76, 46, 0.25),
+            rgba(8, 22, 12, 0.85)
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent 0px,
+            transparent 79px,
+            rgba(120, 180, 90, 0.07) 80px
+        ) !important;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+.minecraft-home {
+    position: relative;
+    z-index: 1;
+}
+
+/* MINECRAFT LANDSCAPE */
+
+
+
+.minevault-content {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    background: transparent !important;
+}
+
+/* Pixelated sun */
+.pixel-sun {
+    position: absolute;
+    top: 9%;
+    right: 13%;
+    width: 85px;
+    height: 85px;
+    background: #ffe66d;
+    box-shadow: 0 0 0 12px #fff2a055;
+}
+
+/* Minecraft clouds */
+.pixel-cloud {
+    position: absolute;
+    width: 140px;
+    height: 35px;
+    background: white;
+    box-shadow:
+        30px -25px white,
+        75px -25px white,
+        110px 0 white;
+}
+
+.cloud-one {
+    top: 15%;
+    left: 10%;
+}
+
+.cloud-two {
+    top: 28%;
+    right: 25%;
+    transform: scale(0.7);
+}
+
+/* Blocky mountains */
+.pixel-hill {
+    position: absolute;
+    bottom: 14%;
+    width: 45%;
+    height: 38%;
+    background: #578f4b;
+    clip-path: polygon(
+        0 100%, 0 65%,
+        15% 65%, 15% 45%,
+        35% 45%, 35% 20%,
+        65% 20%, 65% 50%,
+        85% 50%, 85% 75%,
+        100% 75%, 100% 100%
+    );
+}
+
+.hill-one {
+    left: 0;
+}
+
+.hill-two {
+    right: 0;
+    background: #3c753c;
+    transform: scaleX(-1);
+}
+
+/* Grass and dirt blocks */
+.pixel-grass {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 16%;
+    background:
+        linear-gradient(
+            to bottom,
+            #6abf42 0 22%,
+            #795334 22% 100%
+        );
+    border-top: 12px solid #8bdb53;
+}
+
+/* Keep the player panel readable */
+.game-panel {
+    background: rgba(17, 35, 19, 0.94);
+}
+
+/* Item display after search */
+#result-item {
+    width: 90%;
+    max-width: 750px;
+    margin: 25px auto;
+    border-collapse: collapse;
+    background: #263729;
+    color: white;
+    border: 3px solid #8dbd55;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+#result-item td {
+    padding: 15px;
+    border: 2px solid #52694b;
+    text-align: center;
+    font-size: 16px;
+}
+
+#result-item tr:first-child {
+    background: linear-gradient(180deg, #6da653, #3c702f);
+    color: #f5ffe8;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+#result-item tr:nth-child(2) {
+    background: #354638;
+}
+
+#result-item tr:hover {
+    background: #496346;
+}
+
+@media (max-width: 600px) {
+    #result-item {
+        width: 95%;
+    }
+
+    #result-item td {
+        padding: 8px 4px;
+        font-size: 12px;
+    }
+}
+
+/* Info if item is in chest */
+/* ===== CHEST LOCATION LIST ===== */
+
+.inventory-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px auto;
+    max-width: 500px;
+}
+
+.inventory-section ul li {
+    background: linear-gradient(145deg, #405642, #263729);
+    border: 2px solid #83b64e;
+    border-radius: 7px;
+    padding: 14px 18px;
+    margin: 10px 0;
+    color: #f4f7ed;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: left;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: 0.2s ease;
+}
+
+.inventory-section ul li:hover {
+    background: #58794d;
+    border-color: #c9f59a;
+    transform: translateX(5px);
+}
+

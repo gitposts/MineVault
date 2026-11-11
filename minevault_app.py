@@ -224,6 +224,8 @@ def transfer_chest(origin_chest, origin_slot, player_id):
         dest_chest = request.form['transfer_chest']
         item_name = request.form['transfer-item-name']
         quantity = request.form['amount_sel']
+        if quantity == '':
+            quantity = 1
 
         cur = mysql.connection.cursor()
 

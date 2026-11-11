@@ -26,9 +26,17 @@
     <button type="submit" id="create">Create!</button>
 </form>
 
+<form action="/player-select" method="POST" >
+    <input type="text" id="players" name="players" value="{{player[0]}}">
+    <button type="submit">
+        Cancel
+    </button>
+</form>
+
 <script>
     document.getElementById("items-list").style.display="none";
     document.getElementById("amounts-list").style.display="none";
+    document.getElementById("players").style.display="none";
 
     function addItem() {
         items = document.getElementById("items-list").value;
